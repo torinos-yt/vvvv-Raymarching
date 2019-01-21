@@ -1,6 +1,6 @@
 <!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta37.dtd" >
    <PATCH nodename="D:\Desktop\vvvv-raymarching\vvvvRayMarching.v4p" systemname="Sphere" filename="C:\Users\iryut\Desktop\vvvv-raymarching\Sphere\Sphere.v4p" scrollx="465" scrolly="-195">
-   <BOUNDS type="Window" left="-135" top="30" width="28935" height="15690">
+   <BOUNDS type="Window" left="0" top="30" width="14415" height="15690">
    </BOUNDS>
    <PACK Name="dx11" Version="1.3.1">
    </PACK>
@@ -12,22 +12,6 @@
    </PACK>
    <PACK Name="addonpack" Version="36.0.0">
    </PACK>
-   <NODE systemname="Sphere_Raymarch (DX11.Effect)" filename="dx11\Sphere_Raymarch.fx" nodename="Sphere_Raymarch (DX11.Effect)" componentmode="Hidden" id="2">
-   <BOUNDS type="Node" left="3270" top="2775" width="100" height="100">
-   </BOUNDS>
-   <PIN pinname="Geometry" visible="1">
-   </PIN>
-   <PIN pinname="Layer" visible="1">
-   </PIN>
-   <PIN pinname="LightPosXYZ" visible="1" slicecount="3" values="0.19,-1,1">
-   </PIN>
-   <PIN pinname="cPosXYZ" visible="1" slicecount="3" values="0.28,0,-2">
-   </PIN>
-   <PIN pinname="cDirXYZ" visible="1" slicecount="3" values="-0.88,0,1">
-   </PIN>
-   <PIN pinname="angle" visible="1">
-   </PIN>
-   </NODE>
    <NODE systemname="Quad (DX11.Geometry)" filename="%VVVV%\packs\dx11\nodes\plugins\base\VVVV.DX11.Nodes.dll" nodename="Quad (DX11.Geometry)" componentmode="Hidden" id="4">
    <BOUNDS type="Node" left="3645" top="2265" width="100" height="100">
    </BOUNDS>
@@ -38,8 +22,6 @@
    <PIN pinname="SizeXY" visible="1">
    </PIN>
    </NODE>
-   <LINK srcnodeid="4" srcpinname="Geometry Out" dstnodeid="2" dstpinname="Geometry">
-   </LINK>
    <NODE nodename="IOBox (Value Advanced)" componentmode="InABox" id="5">
    <BOUNDS type="Box" left="3630" top="1545" width="795" height="480">
    </BOUNDS>
@@ -159,9 +141,9 @@
    </PIN>
    </NODE>
    <NODE systemname="Preview (DX11.Texture)" filename="%VVVV%\packs\dx11\nodes\plugins\base\VVVV.DX11.Nodes.dll" nodename="Preview (DX11.Texture)" componentmode="InABox" id="18">
-   <BOUNDS type="Node" left="3825" top="5670" width="100" height="100">
+   <BOUNDS type="Node" left="3855" top="5745" width="100" height="100">
    </BOUNDS>
-   <BOUNDS type="Box" left="3825" top="5670" width="6000" height="4500">
+   <BOUNDS type="Box" left="3855" top="5745" width="5790" height="4500">
    </BOUNDS>
    <BOUNDS type="Window" left="3360" top="6915" width="6240" height="5085">
    </BOUNDS>
@@ -205,13 +187,13 @@
    <LINK srcnodeid="25" srcpinname="View" dstnodeid="17" dstpinname="View">
    </LINK>
    <NODE systemname="Teapot (DX11 Geometry)" filename="%VVVV%\packs\InstanceNoodles\nodes\modules\DX11.Geometry\Teapot (DX11 Geometry).v4p" nodename="Teapot (DX11 Geometry)" componentmode="Hidden" id="33">
-   <BOUNDS type="Node" left="5625" top="2130" width="100" height="100">
+   <BOUNDS type="Node" left="24330" top="12255" width="100" height="100">
    </BOUNDS>
    <PIN pinname="Geometry Out" visible="1">
    </PIN>
    </NODE>
    <NODE systemname="PhongDirectional (DX11.Effect)" filename="%VVVV%\packs\dx11\nodes\dx11\PhongDirectional.fx" nodename="PhongDirectional (DX11.Effect)" componentmode="Hidden" id="34">
-   <BOUNDS type="Node" left="5310" top="2805" width="100" height="100">
+   <BOUNDS type="Node" left="24015" top="12930" width="100" height="100">
    </BOUNDS>
    <PIN pinname="Geometry" visible="1">
    </PIN>
@@ -223,9 +205,9 @@
    <LINK srcnodeid="33" srcpinname="Geometry Out" dstnodeid="34" dstpinname="Geometry">
    </LINK>
    <NODE systemname="Group (DX11.Layer)" filename="%VVVV%\packs\dx11\nodes\plugins\base\VVVV.DX11.Nodes.dll" nodename="Group (DX11.Layer)" componentmode="Hidden" id="35">
-   <BOUNDS type="Node" left="3090" top="3915" width="100" height="100">
+   <BOUNDS type="Node" left="23850" top="13575" width="100" height="100">
    </BOUNDS>
-   <BOUNDS type="Box" left="3090" top="3915" width="3000" height="3000">
+   <BOUNDS type="Box" left="23850" top="13575" width="3000" height="3000">
    </BOUNDS>
    <PIN pinname="Layer 1" visible="1" slicecount="1" values="||">
    </PIN>
@@ -235,9 +217,9 @@
    </PIN>
    </NODE>
    <NODE nodename="IOBox (Color)" componentmode="InABox" id="36">
-   <BOUNDS type="Box" left="6870" top="2145" width="2250" height="480">
+   <BOUNDS type="Box" left="25575" top="12270" width="2250" height="480">
    </BOUNDS>
-   <BOUNDS type="Node" left="6870" top="2145" width="0" height="0">
+   <BOUNDS type="Node" left="25575" top="12270" width="0" height="0">
    </BOUNDS>
    <PIN pinname="Color Input" slicecount="1" visible="1" values="|0.85000,0.02443,0.02443,1.00000|">
    </PIN>
@@ -256,16 +238,12 @@
    </NODE>
    <LINK srcnodeid="38" srcpinname="Transform Out" dstnodeid="17" dstpinname="Projection">
    </LINK>
-   <LINK srcnodeid="2" srcpinname="Layer" dstnodeid="35" dstpinname="Layer 1">
-   </LINK>
-   <LINK srcnodeid="35" srcpinname="Layer Out" dstnodeid="17" dstpinname="Layer">
-   </LINK>
    <NODE nodename="IOBox (Value Advanced)" componentmode="InABox" id="39">
    <BOUNDS type="Box" left="4575" top="1290" width="795" height="720">
    </BOUNDS>
    <BOUNDS type="Node" left="4575" top="1290" width="0" height="0">
    </BOUNDS>
-   <PIN pinname="Y Input Value" slicecount="3" visible="1" values="0.19,0.72,-1">
+   <PIN pinname="Y Input Value" slicecount="3" visible="1" values="0.68,2.37,-2.16">
    </PIN>
    <PIN pinname="Units" slicecount="1" values="||">
    </PIN>
@@ -278,6 +256,44 @@
    <PIN pinname="Descriptive Name" slicecount="1" values="LightPosXYZ">
    </PIN>
    </NODE>
+   <NODE systemname="Integrate (Differential)" nodename="Integrate (Differential)" componentmode="Hidden" id="40">
+   <BOUNDS type="Node" left="6765" top="3090" width="100" height="100">
+   </BOUNDS>
+   <PIN pinname="Position Out" visible="1">
+   </PIN>
+   <PIN pinname="Position In" slicecount="1" values="0.7">
+   </PIN>
+   <PIN pinname="Reset" slicecount="1" values="0">
+   </PIN>
+   </NODE>
+   <NODE id="2" systemname="Sphere_Raymarch (DX11.Effect)" filename="dx11\Sphere_Raymarch.fx" nodename="Sphere_Raymarch (DX11.Effect)" componentmode="Hidden">
+   <PIN pinname="t" visible="1">
+   </PIN>
+   <PIN pinname="Layer" visible="1">
+   </PIN>
+   <BOUNDS type="Node" left="3345" top="2805" width="100" height="100">
+   </BOUNDS>
+   <PIN pinname="Geometry" visible="1">
+   </PIN>
+   <PIN pinname="LightPosXYZ" visible="1" slicecount="3" values="0.19,-1,1">
+   </PIN>
+   <PIN pinname="cPosXYZ" visible="1" slicecount="3" values="0.28,0,-2">
+   </PIN>
+   <PIN pinname="cDirXYZ" visible="1" slicecount="3" values="-0.88,0,1">
+   </PIN>
+   <PIN pinname="angle" visible="1">
+   </PIN>
+   <PIN pinname="Specular Color" slicecount="1" values="|0.49398,0.49398,0.49398,1.00000|">
+   </PIN>
+   <PIN pinname="Color" slicecount="1" values="|0.71270,0.71270,0.71270,1.00000|">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="40" srcpinname="Position Out" dstnodeid="2" dstpinname="t">
+   </LINK>
+   <LINK srcnodeid="2" srcpinname="Layer" dstnodeid="17" dstpinname="Layer">
+   </LINK>
    <LINK srcnodeid="39" srcpinname="Y Output Value" dstnodeid="2" dstpinname="LightPosXYZ">
+   </LINK>
+   <LINK srcnodeid="4" srcpinname="Geometry Out" dstnodeid="2" dstpinname="Geometry">
    </LINK>
    </PATCH>

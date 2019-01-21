@@ -6,7 +6,7 @@ SamplerState linearSampler : IMMUTABLE
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
-
+float t;
 cbuffer cbPerDraw : register( b0 )
 {
 	float4x4 tVP : LAYERVIEWPROJECTION;
@@ -17,8 +17,9 @@ cbuffer cbPerDraw : register( b0 )
 cbuffer cbPerObj : register( b1 )
 {
 	float4x4 tW : WORLD;
-	float4 cAmb <bool color=true;String uiname="Color";> = { 1.0f,1.0f,1.0f,1.0f };
-};
+	float4 cAmb <bool color=true;String uiname="Diffuse Color";> = { 1.0f,1.0f,1.0f,1.0f };
+	float4 cSpec <bool color = true; String uiname = "Specular Color";> = {1,1,1,1};
+}
 
 struct VS_IN
 {
@@ -46,48 +47,48 @@ vs2ps VS(VS_IN input)
 	return output;
 }
 
-//è—]ŒvZ
+//ï¿½ï¿½]ï¿½vï¿½Z
 float3 mod(float3 n, float d){
 	return n - (d * floor(n / d));
 }
 
-//‹——£ŠÖ”‚ÌƒŠƒs[ƒg
+//ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½Ìƒï¿½ï¿½sï¿½[ï¿½g
 float3 dRep(float3 p, float c) {
     return mod(p, c) - 0.5 * c;
 }
 
-//‹…‚Ì‹——£ŠÖ”
+//ï¿½ï¿½ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½Öï¿½
 float dSphere(float3 rayPosition, float radius){
 	return length(rayPosition) - radius;
 }
 
-//’¼•û‘Ì‚Ì‹——£ŠÖ”
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ì‹ï¿½ï¿½ï¿½ï¿½Öï¿½
 float dBox( float3 p, float3 b ){
   float3 d = abs(p) - b;
   return length(max(d,0.0))
          + min(max(d.x,max(d.y,d.z)),0.0); // remove this line for an only partially signed sdf 
 }
 
-//ƒg[ƒ‰ƒX‚Ì‹——£ŠÖ”
+//ï¿½gï¿½[ï¿½ï¿½ï¿½Xï¿½Ì‹ï¿½ï¿½ï¿½ï¿½Öï¿½
 float sdTorus( float3 p, float2 t ){
   float2 q = float2(length(p.xz)-t.x,p.y);
   return length(q)-t.y;
 }
 
-//ƒVƒŠƒ“ƒ_[‚Ì‹——£ŠÖ”
+//ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½[ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½Öï¿½
 float sdCappedCylinder( float3 p, float2 h )
 {
   float2 d = abs(float2(length(p.xz),p.y)) - h;
   return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
-//ƒƒ“ƒK[‚ÌƒXƒ|ƒ“ƒW
+//ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½[ï¿½ÌƒXï¿½|ï¿½ï¿½ï¿½W
 float dMenger(float3 pos)
 {
    float d = dBox(pos, 1.0);
 
    float s = 1.0;
-   for(int m = 0; m < 8; m++){
+   for(int m = 0; m < 4; m++){
       float3 a = mod(pos * s, 2.0 ) - 1.0;
       s *= 3.0;
       float3 r = abs(1.0 - 3.0*abs(a));
@@ -125,79 +126,120 @@ float dRecursiveTetrahedron(float3 pos){
     return length(pos) * pow(scale, float(-n));
 }
 
-//ƒXƒ€[ƒX‚ğŠÜ‚Ş‡¬
+float dMandelbulb(float3 p){
+    float3 z = p;
+    float m = dot(z,z);
+
+	float dz = 1.0;
+    
+    
+	for(int i = 0; i < 5; i++){
+		dz = 8.0 * pow(abs(m), 3.5) * dz + 1.0;
+   
+        float r = length(z);
+        float b = 8.0 * acos(clamp(z.y / r, -1.0, 1.0));
+        float a = 8.0 * atan2(z.x, z.z);
+        z = p + pow(r, 8) * float3( sin(b) * sin(a), cos(b), sin(b) * cos(a) );
+       
+
+        m = dot(z,z);
+		if(m > 2.0) break;
+    }
+
+    return 0.25 * log(m) * sqrt(m) / dz;
+}
+
+//ï¿½Xï¿½ï¿½ï¿½[ï¿½Xï¿½ï¿½Ü‚Şï¿½ï¿½ï¿½
 float opSmoothUnion( float d1, float d2, float k ) {
     float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
     return lerp( d2, d1, h ) - k*h*(1.0-h);
 }
 
-//ÅI“I‚ÉƒV[ƒ“‚Æ‚È‚é‹——£ŠÖ”
+//ï¿½ÅIï¿½Iï¿½ÉƒVï¿½[ï¿½ï¿½ï¿½Æ‚È‚é‹—ï¿½ï¿½ï¿½Öï¿½
 float distFunc(float3 pos){
-	return dSphere(dRep(pos, 3.0), 1.0);
+	float scale = 20;
+	float deform = sin(pos.x*scale)*sin(pos.y*scale)*sin(pos.z*scale)*.04;
+	return min(min(dSphere(pos-float3(-2,0,0), 1.0)+deform, dSphere(pos-float3(2,0,0),1))+deform, dBox(pos-float3(0,-1.3,0),float3(4,.2,4)));
 }
 
-//–@ü‚ğæ“¾‚·‚éŠÖ”
+//ï¿½@ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½Öï¿½
 float3 getNormal(float3 pos, float rad){
     float ep = 0.0001;
     return normalize(float3(
-            distFunc(pos) - distFunc(float3(pos.x - ep, pos.y, pos.z)),
-            distFunc(pos) - distFunc(float3(pos.x, pos.y - ep, pos.z)),
-            distFunc(pos) - distFunc(float3(pos.x, pos.y, pos.z - ep))
+            distFunc(float3(pos.x + ep, pos.y, pos.z)) - distFunc(float3(pos.x - ep, pos.y, pos.z)),
+            distFunc(float3(pos.x, pos.y + ep, pos.z)) - distFunc(float3(pos.x, pos.y - ep, pos.z)),
+            distFunc(float3(pos.x, pos.y, pos.z + ep)) - distFunc(float3(pos.x, pos.y, pos.z - ep))
         ));
 }
 
-//Ambient OcclusioniŠÂ‹«Õ•Á€j‚ğŒvZ‚·‚éŠÖ”
+//Ambient Occlusionï¿½iï¿½Â‹ï¿½ï¿½Õ•ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½Öï¿½
 float calcAo(float3 pos, float3 norm){
-	float sca = 1.0, occ = 0.0;
+	float occ = 0.0, k = 2.0;
 	for(float i = 0.0; i < 5.0; i++){
-		float hr = 0.05 + i * 0.5;
+		float hr = k * i / 5.0;
 		float dd = distFunc(norm * hr + pos);
-		occ += (hr - dd) * sca;
-		sca *= 0.5;
+		occ += 1.0 / pow(2.0, float(i)) * abs(hr - dd);
 	}
 	return saturate(1.0 - occ);
 }
 
-float3 LightPos = float3(1.0, -1.0, 1.0); //ƒ‰ƒCƒg‚ÌˆÊ’u
+float softShadow(float3 pos, float3 lPos, float k){
+	float3 rayDir = normalize(lPos - pos);
+	float t = .1;
+	float srate = 100.0;
+	
+	for(int i = 0; i < 100; i++){
+		float3 p = pos + t * rayDir;
+		float d = distFunc(p);
+		srate = min(srate, k * d / t);
+		if(d < .001) break;
+		t += d;
+	}
+	srate = saturate(srate);
+	return srate;
+}
 
-psout PS(vs2ps In)//•Ô‚è’l‚ğ’è‹`‚µ‚½psout‚Éw’èB‚±‚Ì•Ó‚É‚ ‚Á‚½SV_Target‚Ì•¶š‚ğíœ
+float3 LightPos = float3(1.0, -1.0, 1.0); //ï¿½ï¿½ï¿½Cï¿½gï¿½ÌˆÊ’u
+
+psout PS(vs2ps In)//ï¿½Ô‚ï¿½lï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½psoutï¿½Éwï¿½ï¿½Bï¿½ï¿½ï¿½Ì•Ó‚É‚ï¿½ï¿½ï¿½ï¿½ï¿½SV_Targetï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½íœ
 {
 	psout output;
 	
 	float3 LightDir = normalize(LightPos);
 	
 	float2 rayDir = (In.TexCd.xy * 2 - 1) * float2(1, -1);
-	float3 ray = normalize(mul(float4(mul(float4(rayDir, 0, 0), tPI).xy, 1, 0), tVI).xyz); //ƒJƒƒ‰s—ñ‚ğ—˜—p‚µ‚ÄƒŒƒC‚ğ’è‹`
+	float3 ray = normalize(mul(float4(mul(float4(rayDir, 0, 0), tPI).xy, 1, 0), tVI).xyz); //ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ğ—˜—pï¿½ï¿½ï¿½Äƒï¿½ï¿½Cï¿½ï¿½ï¿½`
 	
 	float3 normal;
 	float4 col;
 	
-	float3 rayPos = tVI[3].xyz; //ƒŒƒC‚Ì‰ŠúˆÊ’uiƒJƒƒ‰‚ÌˆÊ’uj‚ğView‚Ì‹ts—ñ‚©‚çæ‚èo‚·B
-	float dist = 0; //ƒŒƒC‚ÆƒIƒuƒWƒFƒNƒgŠÔ‚ÌÅ’Z‹——£‚ğŠi”[‚·‚é•Ï”
-	float ao = 1.0;
+	float3 rayPos = tVI[3].xyz; //ï¿½ï¿½ï¿½Cï¿½Ìï¿½ï¿½ï¿½ï¿½Ê’uï¿½iï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½ÌˆÊ’uï¿½jï¿½ï¿½Viewï¿½Ì‹tï¿½sï¿½ñ‚©‚ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½B
+	float dist = 0; //ï¿½ï¿½ï¿½Cï¿½ÆƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ô‚ÌÅ’Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½ï¿½Ïï¿½
 	
-	//ƒ}[ƒ`ƒ“ƒOƒ‹[ƒv
-	for(int i = 0; i < 64; i++){
+	//ï¿½}ï¿½[ï¿½`ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½[ï¿½v
+	for(int i = 0; i < 128; i++){
 		dist = distFunc(rayPos);
 		
-		//ƒIƒuƒWƒFƒNƒg‚Æ‚Ì‹——£‚ªˆê’èˆÈ‰º‚Å‚ ‚ê‚ÎÕ“Ë‚Æ”»’è
+		//ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Æ‚Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‰ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ÎÕ“Ë‚Æ”ï¿½ï¿½ï¿½
 		if(dist < 0.0001){ 
-			normal = getNormal(rayPos, 1.0);//–@ü‚ğæ“¾
-			col = max(dot(normal, LightDir), 0.15);//ƒ‰ƒ“ƒo[ƒgƒVƒF[ƒfƒBƒ“ƒO+Ambient(0.15)
-			ao = calcAo(rayPos, normal);//AO‚ÌŒvZ
+			normal = getNormal(rayPos, 1.0);//ï¿½@ï¿½ï¿½ï¿½ï¿½æ“¾
+			float shadow = softShadow(rayPos, LightPos, 16.0);//softshadow
+			float diffuse = max(dot(normal, LightDir) * shadow, 0.25);//ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½[ï¿½gï¿½Vï¿½Fï¿½[ï¿½fï¿½Bï¿½ï¿½ï¿½O+Ambient(0.15)
+			float specular = pow(max(dot(-ray, reflect(-LightDir, normal)), 0.0), 16.0);//phong specular
+			float ao = calcAo(rayPos, normal);//AOï¿½ÌŒvï¿½Z
 			
-			break; //Õ“Ë‚µ‚½‚Ì‚Å‚ ‚ê‚ÎA‚±‚êˆÈã‚Ìˆ—‚Í•K—v‚È‚¢‚½‚ßƒ‹[ƒv‚©‚ç”²‚¯‚é
+			col = max((cAmb * diffuse + cSpec * specular) * shadow * ao, 0.15);
+			
+			break; //ï¿½Õ“Ë‚ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ÎAï¿½ï¿½ï¿½ï¿½Èï¿½Ìï¿½ï¿½ï¿½ï¿½Í•Kï¿½vï¿½È‚ï¿½ï¿½ï¿½ï¿½ßƒï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½ç”²ï¿½ï¿½ï¿½ï¿½
 		}
-		rayPos += ray * dist; //ƒŒƒC‚ÌÀ•W‚ğXV
+		rayPos += ray * dist; //ï¿½ï¿½ï¿½Cï¿½Ìï¿½ï¿½Wï¿½ï¿½Xï¿½V
 	}
+	output.color = col;//ï¿½\ï¿½ï¿½ï¿½Ì“ï¿½Ì•Ïï¿½ï¿½É‘Î‚ï¿½ï¿½ÄFï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
 	
-	//col *= ao;//AO‚ğæZ
-	output.color = col;//\‘¢‘Ì“à‚Ì•Ï”‚É‘Î‚µ‚ÄFî•ñ‚ğo—Í
-	
-	float4 posw = mul(float4(rayPos, 1), tVP);//ViewProjections—ñ‚ğ‚©‚¯‚é‚±‚Æ‚Åƒ|ƒŠƒSƒ“ƒ‚ƒfƒ‹‚ÆˆÊ’u‚Ì®‡«‚ğ‚Æ‚é
-	output.depth = posw.z / posw.w; //w¬•ª‚ÅŠ„‚é‚±‚Æ‚Åz‚ğ³‹K‰»‚µA[“x’l‚Æ‚·‚é
+	float4 posw = mul(float4(rayPos, 1), tVP);//ViewProjectionï¿½sï¿½ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Åƒ|ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½fï¿½ï¿½ï¿½ÆˆÊ’uï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½
+	output.depth = posw.z / posw.w; //wï¿½ï¿½ï¿½ï¿½ï¿½ÅŠï¿½ï¿½é‚±ï¿½Æ‚ï¿½zï¿½ğ³‹Kï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½[ï¿½xï¿½lï¿½Æ‚ï¿½ï¿½ï¿½
 
-	return output;//\‘¢‘Ì‚ğ•Ô‚·
+	return output;//ï¿½\ï¿½ï¿½ï¿½Ì‚ï¿½Ô‚ï¿½
 }
 
 
